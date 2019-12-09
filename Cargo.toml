@@ -2,6 +2,7 @@
 name = "small_rngs"
 version = "0.0.1"
 authors = ["pitdicker"]
+edition = "2018"
 
 [dependencies]
 rand_core = { version = "0.5", features = ["getrandom"] }
