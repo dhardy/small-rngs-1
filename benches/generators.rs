@@ -17,10 +17,7 @@ macro_rules! gen_uint {
     ($fnn:ident, $gen:ident, $rng:ident) => {
         #[bench]
         fn $fnn(b: &mut Bencher) {
-            let mut master_rng =
-                XoroshiroMt64of128Rng::from_seed([236, 186, 13, 169, 36, 22, 113, 213,
-                                                  12, 21, 28, 253, 104, 247, 90, 186]);
-            let mut rng = $rng::from_rng(&mut master_rng).unwrap();
+            let mut rng = $rng::seed_from_u64(0);
             b.bytes = size_of_val(&rng.$gen()) as u64 * RAND_BENCH_N;
             b.iter(|| {
                 for _ in 0..RAND_BENCH_N {
