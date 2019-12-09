@@ -36,7 +36,7 @@ impl SeedableRng for MswsRng {
         // The constant s should be set to a random 64-bit pattern with the
         // upper 32 bits non-zero and the least significant bit set to 1
         let stream = seed_u64[0] | 1;
-        if stream & 0xffffffff_00000000 != 0 { panic!(); }
+        if stream & 0xffffffff_00000000 == 0 { panic!("bad seed: high bits are zero"); }
         Self { x: seed_u64[1], w: 0, s: stream }
     }
 
