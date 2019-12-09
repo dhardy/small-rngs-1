@@ -1,5 +1,3 @@
-#![feature(i128_type)]
-
 extern crate rand_core;
 extern crate core;
 

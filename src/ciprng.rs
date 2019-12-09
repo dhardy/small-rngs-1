@@ -9,7 +9,7 @@
 
 //! CIPRNG v3
 
-use rand_core::{Rng, SeedableRng, Error, impls, le};
+use rand_core::{RngCore, SeedableRng, Error, impls, le};
 use core::fmt;
 
 /// Chaotic Iterations PRNG
@@ -53,7 +53,7 @@ impl SeedableRng for CiRng {
         }
     }
 
-    fn from_rng<R: Rng>(mut rng: R) -> Result<Self, Error> {
+    fn from_rng<R: RngCore>(mut rng: R) -> Result<Self, Error> {
         let mut t1 = 0;
         while t1 == 0 { t1 = rng.next_u64() }
         let mut t2 = 0;
@@ -66,7 +66,7 @@ impl SeedableRng for CiRng {
     }
 }
 
-impl Rng for CiRng {
+impl RngCore for CiRng {
     #[inline]
     fn next_u32(&mut self) -> u32 {
         // Xorshift 1
@@ -109,16 +109,11 @@ impl Rng for CiRng {
         impls::next_u64_via_u32(self)
     }
 
-    #[cfg(feature = "i128_support")]
-    fn next_u128(&mut self) -> u128 {
-        impls::next_u128_via_u64(self)
-    }
-
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        impls::fill_bytes_via_u32(self, dest);
+        impls::fill_bytes_via_next(self, dest);
     }
 
-    fn try_fill(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         Ok(self.fill_bytes(dest))
     }
 }

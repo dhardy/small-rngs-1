@@ -9,7 +9,7 @@
 
 //! A fast pseudorandom number generator by Ilya Levin.
 
-use rand_core::{Rng, SeedableRng, Error, impls, le};
+use rand_core::{RngCore, SeedableRng, Error, impls, le};
 
 /// The Sapparot-2 random number generator by Ilya Levin (32-bit version).
 ///
@@ -39,7 +39,7 @@ impl SeedableRng for Sapparot32Rng {
     }
 }
 
-impl Rng for Sapparot32Rng {
+impl RngCore for Sapparot32Rng {
     #[inline]
     fn next_u32(&mut self) -> u32 {
         const PHI: u32 = 0x9e3779b9;
@@ -61,16 +61,11 @@ impl Rng for Sapparot32Rng {
         impls::next_u64_via_u32(self)
     }
 
-    #[cfg(feature = "i128_support")]
-    fn next_u128(&mut self) -> u128 {
-        impls::next_u128_via_u64(self)
-    }
-
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        impls::fill_bytes_via_u32(self, dest)
+        impls::fill_bytes_via_next(self, dest)
     }
 
-    fn try_fill(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         Ok(self.fill_bytes(dest))
     }
 }
@@ -105,7 +100,7 @@ impl SeedableRng for Sapparot64Rng {
     }
 }
 
-impl Rng for Sapparot64Rng {
+impl RngCore for Sapparot64Rng {
     #[inline]
     fn next_u32(&mut self) -> u32 {
         self.next_u64() as u32
@@ -127,16 +122,11 @@ impl Rng for Sapparot64Rng {
         self.c ^ self.b ^ self.a
     }
 
-    #[cfg(feature = "i128_support")]
-    fn next_u128(&mut self) -> u128 {
-        impls::next_u128_via_u64(self)
-    }
-
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        impls::fill_bytes_via_u64(self, dest)
+        impls::fill_bytes_via_next(self, dest)
     }
 
-    fn try_fill(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         Ok(self.fill_bytes(dest))
     }
 }

@@ -9,7 +9,7 @@
 
 //! Middle Square Weyl Sequence RNG
 
-use rand_core::{Rng, SeedableRng, Error, impls, le};
+use rand_core::{RngCore, SeedableRng, Error, impls, le};
 
 /// Middle Square Weyl Sequence RNG
 ///
@@ -40,7 +40,7 @@ impl SeedableRng for MswsRng {
         Self { x: seed_u64[1], w: 0, s: stream }
     }
 
-    fn from_rng<R: Rng>(mut other: R) -> Result<Self, Error> {
+    fn from_rng<R: RngCore>(mut other: R) -> Result<Self, Error> {
         let mut stream;
         loop {
             // The constant s should be set to a random 64-bit pattern with the
@@ -52,7 +52,7 @@ impl SeedableRng for MswsRng {
     }
 }
 
-impl Rng for MswsRng {
+impl RngCore for MswsRng {
     #[inline]
     fn next_u32(&mut self) -> u32 {
         self.next_u64() as u32
@@ -66,16 +66,11 @@ impl Rng for MswsRng {
         self.x.rotate_left(32)
     }
 
-    #[cfg(feature = "i128_support")]
-    fn next_u128(&mut self) -> u128 {
-        impls::next_u128_via_u64(self)
-    }
-
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        impls::fill_bytes_via_u32(self, dest)
+        impls::fill_bytes_via_next(self, dest)
     }
 
-    fn try_fill(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         Ok(self.fill_bytes(dest))
     }
 }

@@ -9,7 +9,7 @@
 
 //! A Small Fast Counting RNG, version 4.
 
-use rand_core::{Rng, SeedableRng, Error, impls, le};
+use rand_core::{RngCore, SeedableRng, Error, impls, le};
 use core::slice;
 
 /// A Small Fast Counting RNG designed by Chris Doty-Humphrey (32-bit version).
@@ -47,7 +47,7 @@ impl SeedableRng for Sfc32Rng {
         state
     }
 
-    fn from_rng<R: Rng>(mut rng: R) -> Result<Self, Error> {
+    fn from_rng<R: RngCore>(mut rng: R) -> Result<Self, Error> {
         // Custom `from_rng` function. Because we can assume the seed to be of
         // good quality, it is not neccesary to discard the first couple of
         // rounds.
@@ -56,13 +56,13 @@ impl SeedableRng for Sfc32Rng {
             let ptr = seed_u32.as_mut_ptr() as *mut u8;
 
             let slice = slice::from_raw_parts_mut(ptr, 4*3);
-            rng.try_fill(slice)?;
+            rng.try_fill_bytes(slice)?;
         }
         Ok(Self { a: seed_u32[0], b: seed_u32[1], c: seed_u32[2], counter: 1 })
     }
 }
 
-impl Rng for Sfc32Rng {
+impl RngCore for Sfc32Rng {
     #[inline]
     fn next_u32(&mut self) -> u32 {
         // good sets include {21,9,3} and {15,8,3}
@@ -83,16 +83,11 @@ impl Rng for Sfc32Rng {
         impls::next_u64_via_u32(self)
     }
 
-    #[cfg(feature = "i128_support")]
-    fn next_u128(&mut self) -> u128 {
-        impls::next_u128_via_u64(self)
-    }
-
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        impls::fill_bytes_via_u32(self, dest)
+        impls::fill_bytes_via_next(self, dest)
     }
 
-    fn try_fill(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         Ok(self.fill_bytes(dest))
     }
 }
@@ -136,7 +131,7 @@ impl SeedableRng for Sfc64Rng {
         state
     }
 
-    fn from_rng<R: Rng>(mut rng: R) -> Result<Self, Error> {
+    fn from_rng<R: RngCore>(mut rng: R) -> Result<Self, Error> {
         // Custom `from_rng` function. Because we can assume the seed to be of
         // good quality, it is not neccesary to discard the first couple of
         // rounds.
@@ -145,13 +140,13 @@ impl SeedableRng for Sfc64Rng {
             let ptr = seed_u64.as_mut_ptr() as *mut u8;
 
             let slice = slice::from_raw_parts_mut(ptr, 8*3);
-            rng.try_fill(slice)?;
+            rng.try_fill_bytes(slice)?;
         }
         Ok(Self { a: seed_u64[0], b: seed_u64[1], c: seed_u64[2], counter: 1 })
     }
 }
 
-impl Rng for Sfc64Rng {
+impl RngCore for Sfc64Rng {
     #[inline]
     fn next_u32(&mut self) -> u32 {
         self.next_u64() as u32
@@ -172,16 +167,11 @@ impl Rng for Sfc64Rng {
         tmp
     }
 
-    #[cfg(feature = "i128_support")]
-    fn next_u128(&mut self) -> u128 {
-        impls::next_u128_via_u64(self)
-    }
-
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        impls::fill_bytes_via_u64(self, dest)
+        impls::fill_bytes_via_next(self, dest)
     }
 
-    fn try_fill(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         Ok(self.fill_bytes(dest))
     }
 }

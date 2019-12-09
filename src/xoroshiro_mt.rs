@@ -9,7 +9,7 @@
 
 //! Xorshift* random number generators
 
-use rand_core::{Rng, SeedableRng, Error, impls, le};
+use rand_core::{RngCore, SeedableRng, Error, impls, le};
 
 #[derive(Clone)]
 pub struct XoroshiroMt32of128Rng {
@@ -32,7 +32,7 @@ impl SeedableRng for XoroshiroMt32of128Rng {
     }
 }
 
-impl Rng for XoroshiroMt32of128Rng {
+impl RngCore for XoroshiroMt32of128Rng {
     #[inline]
     fn next_u32(&mut self) -> u32 {
         let s0 = self.s0;
@@ -50,16 +50,11 @@ impl Rng for XoroshiroMt32of128Rng {
         impls::next_u64_via_u32(self)
     }
 
-    #[cfg(feature = "i128_support")]
-    fn next_u128(&mut self) -> u128 {
-        impls::next_u128_via_u64(self)
-    }
-
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        impls::fill_bytes_via_u32(self, dest)
+        impls::fill_bytes_via_next(self, dest)
     }
 
-    fn try_fill(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         Ok(self.fill_bytes(dest))
     }
 }
@@ -87,7 +82,7 @@ impl SeedableRng for XoroshiroMt64of128Rng {
     }
 }
 
-impl Rng for XoroshiroMt64of128Rng {
+impl RngCore for XoroshiroMt64of128Rng {
     #[inline]
     fn next_u32(&mut self) -> u32 {
         let s0 = self.s0;
@@ -101,7 +96,7 @@ impl Rng for XoroshiroMt64of128Rng {
     }
 
     #[inline]
-    #[cfg(not(any(target_pointer_width = "32", not(feature = "i128_support"))))]
+    #[cfg(not(target_pointer_width = "32"))]
     fn next_u64(&mut self) -> u64 {
         let s0 = self.s0;
         let mut s1 = self.s1;
@@ -115,7 +110,7 @@ impl Rng for XoroshiroMt64of128Rng {
     }
 
     #[inline]
-    #[cfg(any(target_pointer_width = "32", not(feature = "i128_support")))]
+    #[cfg(any(target_pointer_width = "32"))]
     fn next_u64(&mut self) -> u64 {
         let s0 = self.s0;
         let mut s1 = self.s1;
@@ -128,16 +123,11 @@ impl Rng for XoroshiroMt64of128Rng {
         high << 32 | low >> 32
     }
 
-    #[cfg(feature = "i128_support")]
-    fn next_u128(&mut self) -> u128 {
-        impls::next_u128_via_u64(self)
-    }
-
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        impls::fill_bytes_via_u64(self, dest)
+        impls::fill_bytes_via_next(self, dest)
     }
 
-    fn try_fill(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         Ok(self.fill_bytes(dest))
     }
 }
@@ -165,10 +155,10 @@ macro_rules! wmul_impl {
 }
 
 wmul_impl! { u32, u64, 32 }
-#[cfg(not(any(target_pointer_width = "32", not(feature = "i128_support"))))]
+#[cfg(not(any(target_pointer_width = "32")))]
 wmul_impl! { u64, u128, 64 }
 
-#[cfg(any(target_pointer_width = "32", not(feature = "i128_support")))]
+#[cfg(any(target_pointer_width = "32"))]
 impl WideningMultiply for u64 {
     type Output = (u64, u64);
 

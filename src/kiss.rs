@@ -10,7 +10,7 @@
 //! KISS rondom number generators
 
 
-use rand_core::{Rng, SeedableRng, Error, impls, le};
+use rand_core::{RngCore, SeedableRng, Error, impls, le};
 use core::fmt;
 use core::num::Wrapping as Wr;
 
@@ -54,7 +54,7 @@ impl SeedableRng for Kiss32Rng {
         }
     }
 
-    fn from_rng<R: Rng>(mut rng: R) -> Result<Self, Error> {
+    fn from_rng<R: RngCore>(mut rng: R) -> Result<Self, Error> {
         let z = rng.next_u32();
         let w = rng.next_u32();
         let mut jsr = 0;
@@ -65,7 +65,7 @@ impl SeedableRng for Kiss32Rng {
     }
 }
 
-impl Rng for Kiss32Rng {
+impl RngCore for Kiss32Rng {
     #[inline]
     fn next_u32(&mut self) -> u32 {
         // Multiply-With-Carry (MWC)
@@ -89,16 +89,11 @@ impl Rng for Kiss32Rng {
         impls::next_u64_via_u32(self)
     }
 
-    #[cfg(feature = "i128_support")]
-    fn next_u128(&mut self) -> u128 {
-        impls::next_u128_via_u64(self)
-    }
-
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        impls::fill_bytes_via_u32(self, dest);
+        impls::fill_bytes_via_next(self, dest);
     }
 
-    fn try_fill(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         Ok(self.fill_bytes(dest))
     }
 }
@@ -145,7 +140,7 @@ impl SeedableRng for Kiss64Rng {
         }
     }
 
-    fn from_rng<R: Rng>(mut rng: R) -> Result<Self, Error> {
+    fn from_rng<R: RngCore>(mut rng: R) -> Result<Self, Error> {
         let c = rng.next_u64();
         let x = rng.next_u64();
         let mut y = 0;
@@ -156,7 +151,7 @@ impl SeedableRng for Kiss64Rng {
     }
 }
 
-impl Rng for Kiss64Rng {
+impl RngCore for Kiss64Rng {
     #[inline]
     fn next_u32(&mut self) -> u32 {
         self.next_u64() as u32
@@ -180,16 +175,11 @@ impl Rng for Kiss64Rng {
         (self.x + self.y + self.z).0
     }
 
-    #[cfg(feature = "i128_support")]
-    fn next_u128(&mut self) -> u128 {
-        impls::next_u128_via_u64(self)
-    }
-
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        impls::fill_bytes_via_u64(self, dest);
+        impls::fill_bytes_via_next(self, dest);
     }
 
-    fn try_fill(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         Ok(self.fill_bytes(dest))
     }
 }

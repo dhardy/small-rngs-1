@@ -10,7 +10,7 @@ const RAND_BENCH_N: u64 = 1000;
 use core::mem::size_of_val;
 use test::{black_box, Bencher};
 
-use rand_core::{SeedableRng, Rng};
+use rand_core::{SeedableRng, RngCore};
 use small_rngs::*;
 
 macro_rules! gen_uint {

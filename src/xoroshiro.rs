@@ -9,7 +9,7 @@
 
 //! Xoroshiro+ random number generators
 
-use rand_core::{Rng, SeedableRng, Error, impls, le};
+use rand_core::{RngCore, SeedableRng, Error, impls, le};
 
 /// The Xoroshiro128+ random number generator.
 ///
@@ -41,7 +41,7 @@ impl SeedableRng for Xoroshiro128PlusRng {
     }
 }
 
-impl Rng for Xoroshiro128PlusRng {
+impl RngCore for Xoroshiro128PlusRng {
     #[inline]
     fn next_u32(&mut self) -> u32 {
         (self.next_u64() >> 32) as u32
@@ -60,16 +60,11 @@ impl Rng for Xoroshiro128PlusRng {
         result
     }
 
-    #[cfg(feature = "i128_support")]
-    fn next_u128(&mut self) -> u128 {
-        impls::next_u128_via_u64(self)
-    }
-
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        impls::fill_bytes_via_u64(self, dest)
+        impls::fill_bytes_via_next(self, dest)
     }
 
-    fn try_fill(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         Ok(self.fill_bytes(dest))
     }
 }
@@ -97,7 +92,7 @@ impl SeedableRng for Xoroshiro64PlusRng {
     }
 }
 
-impl Rng for Xoroshiro64PlusRng {
+impl RngCore for Xoroshiro64PlusRng {
     #[inline]
     fn next_u32(&mut self) -> u32 {
         let s0 = self.s0;
@@ -116,16 +111,11 @@ impl Rng for Xoroshiro64PlusRng {
         impls::next_u64_via_u32(self)
     }
 
-    #[cfg(feature = "i128_support")]
-    fn next_u128(&mut self) -> u128 {
-        impls::next_u128_via_u64(self)
-    }
-
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        impls::fill_bytes_via_u32(self, dest)
+        impls::fill_bytes_via_next(self, dest)
     }
 
-    fn try_fill(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         Ok(self.fill_bytes(dest))
     }
 }

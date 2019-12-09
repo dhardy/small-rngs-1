@@ -9,7 +9,7 @@
 
 //! PCG random number generators
 
-use rand_core::{Rng, SeedableRng, Error, impls, le};
+use rand_core::{RngCore, SeedableRng, Error, impls, le};
 
 /// A PCG random number generator (XSH 64/32 (LCG) variant).
 ///
@@ -37,7 +37,7 @@ impl SeedableRng for PcgXsh64LcgRng {
     }
 }
 
-impl Rng for PcgXsh64LcgRng {
+impl RngCore for PcgXsh64LcgRng {
     #[inline]
     fn next_u32(&mut self) -> u32 {
         let state = self.state;
@@ -64,16 +64,11 @@ impl Rng for PcgXsh64LcgRng {
        impls::next_u64_via_u32(self)
     }
 
-    #[cfg(feature = "i128_support")]
-    fn next_u128(&mut self) -> u128 {
-        impls::next_u128_via_u64(self)
-    }
-
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        impls::fill_bytes_via_u32(self, dest)
+        impls::fill_bytes_via_next(self, dest)
     }
 
-    fn try_fill(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         Ok(self.fill_bytes(dest))
     }
 }
@@ -106,7 +101,7 @@ impl SeedableRng for PcgXsl64LcgRng {
     }
 }
 
-impl Rng for PcgXsl64LcgRng {
+impl RngCore for PcgXsl64LcgRng {
     #[inline]
     fn next_u32(&mut self) -> u32 {
         let state = self.state;
@@ -132,16 +127,11 @@ impl Rng for PcgXsl64LcgRng {
        impls::next_u64_via_u32(self)
     }
 
-    #[cfg(feature = "i128_support")]
-    fn next_u128(&mut self) -> u128 {
-        impls::next_u128_via_u64(self)
-    }
-
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        impls::fill_bytes_via_u32(self, dest)
+        impls::fill_bytes_via_next(self, dest)
     }
 
-    fn try_fill(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         Ok(self.fill_bytes(dest))
     }
 }
@@ -174,7 +164,7 @@ impl SeedableRng for PcgXsl128McgRng {
     }
 }
 
-impl Rng for PcgXsl128McgRng {
+impl RngCore for PcgXsl128McgRng {
     #[inline]
     fn next_u32(&mut self) -> u32 {
         self.next_u64() as u32
@@ -199,16 +189,11 @@ impl Rng for PcgXsl128McgRng {
         xsl.rotate_right((state >> ROTATE) as u32)
     }
 
-    #[cfg(feature = "i128_support")]
-    fn next_u128(&mut self) -> u128 {
-        impls::next_u128_via_u64(self)
-    }
-
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        impls::fill_bytes_via_u64(self, dest)
+        impls::fill_bytes_via_next(self, dest)
     }
 
-    fn try_fill(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         Ok(self.fill_bytes(dest))
     }
 }
@@ -231,7 +216,7 @@ impl SeedableRng for MwpRng {
     }
 }
 
-impl Rng for MwpRng {
+impl RngCore for MwpRng {
     #[inline]
     fn next_u32(&mut self) -> u32 {
         self.m = self.m.wrapping_mul(6364136223846793005);
@@ -271,16 +256,11 @@ impl Rng for MwpRng {
         state ^ (state >> ((2 * BITS + 2) / 3))
     }
 
-    #[cfg(feature = "i128_support")]
-    fn next_u128(&mut self) -> u128 {
-        impls::next_u128_via_u64(self)
-    }
-
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        impls::fill_bytes_via_u64(self, dest)
+        impls::fill_bytes_via_next(self, dest)
     }
 
-    fn try_fill(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         Ok(self.fill_bytes(dest))
     }
 }

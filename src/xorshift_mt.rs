@@ -9,7 +9,7 @@
 
 //! Xorshift* random number generators
 
-use rand_core::{Rng, SeedableRng, Error, impls, le};
+use rand_core::{RngCore, SeedableRng, Error, impls, le};
 
 #[derive(Clone)]
 pub struct XorshiftMt32Rng {
@@ -32,7 +32,7 @@ impl SeedableRng for XorshiftMt32Rng {
     }
 }
 
-impl Rng for XorshiftMt32Rng {
+impl RngCore for XorshiftMt32Rng {
     #[inline]
     fn next_u32(&mut self) -> u32 {
         let x = self.s0;
@@ -48,16 +48,11 @@ impl Rng for XorshiftMt32Rng {
         impls::next_u64_via_u32(self)
     }
 
-    #[cfg(feature = "i128_support")]
-    fn next_u128(&mut self) -> u128 {
-        impls::next_u128_via_u64(self)
-    }
-
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        ::rand_core::impls::fill_bytes_via_u32(self, dest)
+        ::rand_core::impls::fill_bytes_via_next(self, dest)
     }
 
-    fn try_fill(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         Ok(self.fill_bytes(dest))
     }
 }
@@ -97,7 +92,7 @@ impl SeedableRng for XorshiftMt64Rng {
     }
 }
 
-impl Rng for XorshiftMt64Rng {
+impl RngCore for XorshiftMt64Rng {
     #[inline]
     fn next_u32(&mut self) -> u32 {
         (self.xorshift().wrapping_mul(2685821657736338717) >> 16) as u32
@@ -108,16 +103,11 @@ impl Rng for XorshiftMt64Rng {
         ((self.xorshift() as u128 * 2685821657736338717 as u128) >> 32) as u64
     }
 
-    #[cfg(feature = "i128_support")]
-    fn next_u128(&mut self) -> u128 {
-        impls::next_u128_via_u64(self)
-    }
-
     fn fill_bytes(&mut self, dest: &mut [u8]) {
-        ::rand_core::impls::fill_bytes_via_u64(self, dest)
+        ::rand_core::impls::fill_bytes_via_next(self, dest)
     }
 
-    fn try_fill(&mut self, dest: &mut [u8]) -> Result<(), Error> {
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
         Ok(self.fill_bytes(dest))
     }
 }
