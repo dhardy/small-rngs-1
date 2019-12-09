@@ -8,7 +8,7 @@ extern crate small_rngs;
 const RAND_BENCH_N: u64 = 1000;
 
 use core::mem::size_of_val;
-use test::{black_box, Bencher};
+use test::{Bencher};
 
 use rand_core::{SeedableRng, RngCore};
 use small_rngs::*;
@@ -18,11 +18,14 @@ macro_rules! gen_uint {
         #[bench]
         fn $fnn(b: &mut Bencher) {
             let mut rng = $rng::seed_from_u64(0);
-            b.bytes = size_of_val(&rng.$gen()) as u64 * RAND_BENCH_N;
+            let x = rng.$gen();
+            b.bytes = size_of_val(&x) as u64 * RAND_BENCH_N;
             b.iter(|| {
+                let mut accum = x;
                 for _ in 0..RAND_BENCH_N {
-                    black_box(rng.$gen());
+                    accum = accum.wrapping_add(rng.$gen());
                 }
+                accum
             });
         }
     }
